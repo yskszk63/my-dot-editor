@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>my dot editor</title>
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <script src="js/require-config.js"></script>
+    <script src="http://requirejs.org/docs/release/2.1.10/minified/require.js" data-main="js/index.html"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-2">
+          <ul class="nav nav-pills nav-stacked">
+            <li><a id="open" href="#" class="glyphicon glyphicon-open">open</a></li>
+            <li><a id="generate" href="#" class="glyphicon glyphicon-play">generate</a></li>
+          </ul>
+        </div>
+        <div class="col-md-10">
+          <div id="editor" style="height: 100vh;">digraph "graph" {}</div>
+        </div>
+      </div>
+    </div>
+    <div id="output-modal" class="modal fade">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="image"/>
+            </div>
+            <div class="modal-footer">
+              <a id="save" href="#" download="generated.svg" class="btn btn-primary">Save</a>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+    </div>
+    <div hidden="true">
+      <input id="file-open" type="file" />
+    </div>
+  </body>
+</html>
