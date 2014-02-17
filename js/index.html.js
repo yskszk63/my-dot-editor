@@ -1,4 +1,4 @@
-define(['jquery', 'ace', 'viz', 'bootstrap'], function($, ace, viz) {
+define(['jquery', 'ace', 'viz', 'canvg', 'bootstrap'], function($, ace, viz, canvg) {
 	var editor = ace.edit('editor');
 	editor.setTheme("ace/theme/eclipse");
 	editor.session.setMode("ace/mode/dot");
@@ -6,7 +6,7 @@ define(['jquery', 'ace', 'viz', 'bootstrap'], function($, ace, viz) {
 	editor.setFontSize($('body').css('font-size'));
 	editor.commands.addCommand({
 		name: 'generate',
-		bindKey: {win: 'Shift+Enter', mac: 'Ctrl+F11'},
+		bindKey: {win: 'Ctrl+F11', mac: 'Ctrl+F11'},
 		exec: function() {
 			$('#generate').click();
 		},
@@ -32,15 +32,11 @@ define(['jquery', 'ace', 'viz', 'bootstrap'], function($, ace, viz) {
 
 		var dot = editor.getValue();
 		var svg = viz(dot + new Array(dot.length).join(' '), 'svg');
-		var image = $('#image');
-		var old = image.attr('src');
-		var url = URL.createObjectURL(new Blob([svg], {type:'image/svg+xml'}));
-		image.attr('src', url);
+    var canvas = $('<canvas>');
+    canvg(canvas[0], svg);
+    var url = canvas[0].toDataURL();
 		$('#save').attr('href', url);
-		if (old) {
-			URL.revokeObjectURL(old);
-		}
+    $('#image').attr('src', url);
 		$('#output-modal').modal('show');
 	});
-
 });
