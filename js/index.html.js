@@ -31,7 +31,7 @@ define(['jquery', 'ace', 'viz', 'canvg', 'bootstrap'], function($, ace, viz, can
 		event.preventDefault();
 
 		var dot = editor.getValue();
-		var svg = viz(dot + new Array(dot.length).join(' '), 'svg');
+		var svg = viz(dot, 'svg');
     var canvas = $('<canvas>');
     canvg(canvas[0], svg);
     var url = canvas[0].toDataURL();
