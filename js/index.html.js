@@ -1,5 +1,5 @@
 'use strict';
-define(['jquery', 'cm/lib/codemirror', 'viz', 'canvg/canvg', 'bootstrap', 'cm/mode/javascript/javascript'], function($, codemirror, viz, canvg) {
+define(['jquery', 'cm/lib/codemirror', 'viz', 'canvg', 'bootstrap', 'cm/mode/javascript/javascript'], function($, codemirror, viz, canvg) {
     var editor = codemirror.fromTextArea($('#editor')[0], {
         'mode': 'javascript',
         'indentWithTabs': true,
