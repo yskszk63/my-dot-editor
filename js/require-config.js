@@ -13,7 +13,7 @@ var require = {
     'cm/lib/codemirror': '//cdnjs.cloudflare.com/ajax/libs/codemirror/4.8.0/codemirror.min',
     'cm/mode/javascript/javascript': '//cdnjs.cloudflare.com/ajax/libs/codemirror/4.8.0/mode/javascript/javascript.min',
     'viz': '//rawgit.com/mdaines/viz.js/gh-pages/viz',
-    'canvg': '//rawgit.com/gabelerner/canvg/master/canvg',
+    'canvgModule': '//rawgit.com/gabelerner/canvg/master/canvg',
     'rgbcolor': '//rawgit.com/gabelerner/canvg/master/rgbcolor',
     'stackblur': '//rawgit.com/gabelerner/canvg/master/StackBlur',
   }
