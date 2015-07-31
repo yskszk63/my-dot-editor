@@ -38,7 +38,6 @@ define(['jquery', 'cm/lib/codemirror', 'viz', 'canvgModule', 'bootstrap', 'cm/mo
         var url = canvas[0].toDataURL();
         $('#save').attr('href', url);
         $('#image').attr('src', url);
-        $('#output-modal').modal('show');
 	});
 
 });

@@ -6,41 +6,37 @@
     <title>my dot editor</title>
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.8.0/codemirror.min.css">
+    <link rel="stylesheet" href="css/index.html.css">
   </head>
   <body>
-    <div class="container">
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">my-dot-editor</a>
+        </div>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a id="open" href="#" class="glyphicon glyphicon-open">open</a></li>
+          <li><a id="generate" href="#" class="glyphicon glyphicon-play">generate</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="container">
       <div class="row">
-        <div class="col-md-2">
-          <ul class="nav nav-pills nav-stacked">
-            <li><a id="open" href="#" class="glyphicon glyphicon-open">open</a></li>
-            <li><a id="generate" href="#" class="glyphicon glyphicon-play">generate</a></li>
-          </ul>
+        <div class="col-md-6">
+          <textarea id="editor" autofocus="autofocus">digraph "graph" {}</textarea>
         </div>
-        <div class="col-md-10">
-          <textarea id="editor" style="height: 100vh;" autofocus="autofocus">digraph "graph" {}</textarea>
+        <div class="col-md-6">
+          <a id="save" download="generated.png"><img id="image" class="img-responsive img-thumbnail" /></a>
         </div>
       </div>
-    </div>
-    <div id="output-modal" class="modal fade">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          </div>
-          <div class="modal-body text-center">
-              <img id="image" class="img-responsive img-thumbnail" />
-          </div>
-          <div class="modal-footer">
-            <a id="save" download="generated.png" class="btn btn-primary">Save</a>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    </main>
+
     <div class="hide">
       <input id="file-open" type="file" />
     </div>
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.8.0/codemirror.min.css">
+
     <script src="js/require-config.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.18/require.min.js" data-main="js/index.html"></script>
   </body>
