@@ -1,5 +1,6 @@
 'use strict';
-define(['jquery', 'cm/lib/codemirror', 'viz', 'canvgModule', 'bootstrap', 'cm/mode/javascript/javascript'], function($, codemirror, viz, canvg) {
+define(['jquery', 'lodash', 'cm/lib/codemirror', 'canvgModule', 'bootstrap', 'cm/mode/javascript/javascript'], function($, _, codemirror, canvg) {
+    var worker = new Worker('js/worker.js');
     var editor = codemirror.fromTextArea($('#editor')[0], {
         'mode': 'javascript',
         'indentWithTabs': true,
@@ -30,14 +31,26 @@ define(['jquery', 'cm/lib/codemirror', 'viz', 'canvgModule', 'bootstrap', 'cm/mo
         }
     });
 
-    $('#generate').click(function(event) {
-        var dot = editor.getValue();
-        var svg = viz(dot, 'svg');
-        var canvas = $('<canvas>');
-        canvg(canvas[0], svg);
-        var url = canvas[0].toDataURL();
-        $('#save').attr('href', url);
-        $('#image').attr('src', url);
-	});
+    $(worker).on('message', function(e) {
+        var svg = e.originalEvent.data;
+        if (typeof svg === 'string') {
+            var canvas = $('<canvas>');
+            canvg(canvas[0], svg);
+            var url = canvas[0].toDataURL();
+            $('#save').attr('href', url);
+            $('#image').attr('src', url);
+        } else {
+            console.log('x', svg);
+        }
+        $('#image').css('opacity', '1.0');
+    });
 
+    editor.on('change', _.debounce(function(editor, change) {
+        $('#generate').click().trigger();
+    }, 300));
+    $('#generate').click(function(event) {
+        $('#image').css('opacity', '0.3');
+        var dot = editor.getValue();
+        worker.postMessage(dot);
+    });
 });

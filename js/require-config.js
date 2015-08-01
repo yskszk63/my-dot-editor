@@ -16,5 +16,6 @@ var require = {
     'canvgModule': '//rawgit.com/gabelerner/canvg/master/canvg',
     'rgbcolor': '//rawgit.com/gabelerner/canvg/master/rgbcolor',
     'stackblur': '//rawgit.com/gabelerner/canvg/master/StackBlur',
+    'lodash': 'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min',
   }
 };
