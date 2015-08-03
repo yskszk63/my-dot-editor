@@ -7,9 +7,9 @@ require({baseUrl: './'}, ['viz'], function(viz) {
     var data = e.data;
     try {
         var svg = viz(data, 'svg');
-        self.postMessage(viz(data, 'svg'));
+        self.postMessage({status:'ok', data:viz(data, 'svg')});
     } catch (e) {
-        self.postMessage(e);
+        self.postMessage({status:'ng', data:e});
     }
   }, false);
 });

@@ -3,7 +3,7 @@ define(['jquery', 'lodash', 'codemirror', 'canvgModule', 'bootstrap', 'codemirro
     var worker = new Worker('js/worker.js');
     var editor = codemirror.fromTextArea($('#editor')[0], {
         'mode': 'javascript',
-        'indentWithTabs': true,
+        'indentWithTabs': false,
         'lineNumbers': true,
         'extraKeys': {
             'Ctrl-Enter': function(cm) {
@@ -32,15 +32,16 @@ define(['jquery', 'lodash', 'codemirror', 'canvgModule', 'bootstrap', 'codemirro
     });
 
     $(worker).on('message', function(e) {
-        var svg = e.originalEvent.data;
-        if (typeof svg === 'string') {
+        var message = e.originalEvent.data;
+        if (message.status === 'ok') {
             var canvas = $('<canvas>');
-            canvg(canvas[0], svg);
+            canvg(canvas[0], message.data);
             var url = canvas[0].toDataURL();
             $('#save').attr('href', url);
             $('#image').attr('src', url);
+            $('#image').removeClass('bg-danger');
         } else {
-            console.log('x', svg);
+            $('#image').addClass('bg-danger');
         }
         $('#image').css('opacity', '1.0');
     });
