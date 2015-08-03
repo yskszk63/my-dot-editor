@@ -1,5 +1,5 @@
 'use strict';
-define(['jquery', 'lodash', 'cm/lib/codemirror', 'canvgModule', 'bootstrap', 'cm/mode/javascript/javascript'], function($, _, codemirror, canvg) {
+define(['jquery', 'lodash', 'codemirror', 'canvgModule', 'bootstrap', 'codemirror/mode/javascript/javascript'], function($, _, codemirror, canvg) {
     var worker = new Worker('js/worker.js');
     var editor = codemirror.fromTextArea($('#editor')[0], {
         'mode': 'javascript',
