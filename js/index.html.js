@@ -1,16 +1,15 @@
 'use strict';
-define(['jquery', 'lodash', 'codemirror', 'canvgModule', 'bootstrap', 'codemirror/mode/javascript/javascript'], function($, _, codemirror, canvg) {
+define(['jquery', 'lodash', 'ace', 'canvgModule', 'ace/mode-dot', 'ace/ext-language_tools', 'bootstrap'], function($, _, ace, canvg) {
     var worker = new Worker('js/worker.js');
-    var editor = codemirror.fromTextArea($('#editor')[0], {
-        'mode': 'javascript',
-        'indentWithTabs': false,
-        'lineNumbers': true,
-        'extraKeys': {
-            'Ctrl-Enter': function(cm) {
-                $('#generate').click();
-            }
-        }
+    var editor = ace.edit('editor');
+    editor.getSession().setMode('ace/mode/dot');
+    editor.getSession().setUseSoftTabs(true);
+    editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true,
+        enableLiveAutocompletion: false
     });
+    editor.focus();
 
     $('a[href=#]').click(function(event) {
         event.preventDefault();
@@ -46,8 +45,8 @@ define(['jquery', 'lodash', 'codemirror', 'canvgModule', 'bootstrap', 'codemirro
         $('#image').css('opacity', '1.0');
     });
 
-    editor.on('change', _.debounce(function(editor, change) {
-        $('#generate').click().trigger();
+    editor.getSession().on('change', _.debounce(function(editor) {
+        $('#generate').click().trigger('click');
     }, 300));
     $('#generate').click(function(event) {
         $('#image').css('opacity', '0.3');

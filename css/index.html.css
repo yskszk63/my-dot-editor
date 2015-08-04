@@ -2,6 +2,15 @@ body {
   padding-top: 50px;
 }
 
-main .CodeMirror,textarea {
+main .input-pane,.output-pane {
   height: calc(100vh - 50px);
+}
+
+#editor,#save {
+  height: 100%;
+}
+
+#editor {
+  font-size: 13px;
+  font-family: "Consolas" monospace
 }

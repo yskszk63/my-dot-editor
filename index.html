@@ -6,7 +6,6 @@
     <title>my dot editor</title>
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.5.0/codemirror.min.css">
     <link rel="stylesheet" href="css/index.html.css">
   </head>
   <body>
@@ -30,10 +29,10 @@
 
     <main class="container">
       <div class="row">
-        <div class="col-md-6">
-          <textarea id="editor" autofocus="autofocus">digraph "graph" {}</textarea>
+        <div class="col-md-6 input-pane">
+          <div id="editor">digraph "graph" {}</div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6 output-pane">
           <a id="save" download="generated.png"><img id="image" class="img-responsive img-thumbnail center-block" /></a>
         </div>
       </div>
