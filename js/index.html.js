@@ -10,6 +10,7 @@ define(['jquery', 'lodash', 'ace', 'ace/mode-dot', 'ace/ext-language_tools', 'bo
         enableLiveAutocompletion: false,
         fontSize: $('body').css('font-size')
     });
+    editor.$blockScrolling = Infinity;
     editor.focus();
 
     $('a[href=#]').on('click', event => event.preventDefault());
@@ -22,6 +23,11 @@ define(['jquery', 'lodash', 'ace', 'ace/mode-dot', 'ace/ext-language_tools', 'bo
             $(reader).on('load', event => editor.getSession().setValue(event.target.result));
             reader.readAsText(file);
         }
+    });
+
+    $('.app-engine').on('click', event => {
+        $('#selected-engine').text($(event.target).data('app-engine'));
+        $('#generate').on('click').trigger('click');
     });
 
     editor.getSession().on('change', _.debounce(() => $('#generate').on('click').trigger('click'), 300));
@@ -60,7 +66,7 @@ define(['jquery', 'lodash', 'ace', 'ace/mode-dot', 'ace/ext-language_tools', 'bo
                 }
             }
             $(worker).on('message', handler);
-            worker.postMessage({data:source, sequence:sequence});
+            worker.postMessage({data:source, sequence:sequence, engine:$('#selected-engine').text()});
         });
     }
 

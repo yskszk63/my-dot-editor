@@ -12,7 +12,7 @@
   <body>
     <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
           <span class="sr-only">Toggle navigation</span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
@@ -21,14 +21,26 @@
         <div class="navbar-header">
           <a class="navbar-brand" href="#">my-dot-editor</a>
         </div>
-        <ul class="nav navbar-nav collapse navbar-collapse navbar-left" id="navbar-collapse-1">
-          <li><a id="open" href="#" class="glyphicon glyphicon-open">open</a></li>
-          <li><a id="generate" href="#" class="glyphicon glyphicon-play">generate</a></li>
+        <ul id="navbar-collapse" class="nav navbar-nav collapse navbar-collapse navbar-left">
+          <li><a id="open" href="#"><span class="glyphicon glyphicon-open"></span> open</a></li>
+          <li><a id="generate" href="#" ><span class="glyphicon glyphicon-play"></span> generate</a></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+              <span id="selected-engine">dot</span><span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a href="#" class="app-engine" data-app-engine="dot">dot</a></li>
+              <li><a href="#" class="app-engine" data-app-engine="neato">neato</a></li>
+              <li><a href="#" class="app-engine" data-app-engine="circo">circo</a></li>
+              <li><a href="#" class="app-engine" data-app-engine="twopi">twopi</a></li>
+              <li><a href="#" class="app-engine" data-app-engine="fdp">fdp</a></li>
+            </ul>
+          </li>
         </ul>
       </div>
     </nav>
 
-    <main class="container">
+    <main class="container-fluid">
       <div class="row">
         <div class="col-md-6 input-pane">
           <div id="editor">digraph "graph" {}</div>
