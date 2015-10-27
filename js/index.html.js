@@ -1,5 +1,5 @@
 'use strict';
-define(['jquery', 'lodash', 'ace', 'ace/mode-dot', 'ace/ext-language_tools', 'bootstrap'], function($, _, ace) {
+define(['jquery', 'lodash', 'ace', 'localforage', 'ace/mode-dot', 'ace/ext-language_tools', 'bootstrap'], function($, _, ace, localforage) {
     var worker = new Worker('js/worker.js');
     var editor = ace.edit('editor');
     editor.getSession().setMode('ace/mode/dot');
@@ -12,6 +12,15 @@ define(['jquery', 'lodash', 'ace', 'ace/mode-dot', 'ace/ext-language_tools', 'bo
     });
     editor.$blockScrolling = Infinity;
     editor.focus();
+
+    localforage.config({
+        storeName: 'my_dot_editor'
+    });
+    localforage.getItem('text').then(text=>{
+        if (typeof text === 'string') {
+            editor.getSession().setValue(text);
+        }
+    });
 
     $('a[href=#]').on('click', event => event.preventDefault());
     $('#open').on('click', () => $('#file-open').on('click').trigger('click'));
@@ -33,14 +42,16 @@ define(['jquery', 'lodash', 'ace', 'ace/mode-dot', 'ace/ext-language_tools', 'bo
     editor.getSession().on('change', _.debounce(() => $('#generate').on('click').trigger('click'), 300));
 
     $('#generate').on('click', () => {
+        var text = editor.getValue();
         $('#image').css('opacity', '0.3');
-        Promise.resolve(editor.getValue())
+        Promise.resolve(text)
             .then(dot).then(to_svg_dataurl)
             .then(png).then(url => {
                 $('#save').attr('href', url);
                 $('#image').attr('src', url);
                 $('#image').removeClass('bg-danger');
                 editor.getSession().clearAnnotations();
+                localforage.setItem('text', text);
             })
             .catch(e=>{
                 $('#image').addClass('bg-danger');
