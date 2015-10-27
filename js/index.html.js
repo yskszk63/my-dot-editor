@@ -40,9 +40,15 @@ define(['jquery', 'lodash', 'ace', 'ace/mode-dot', 'ace/ext-language_tools', 'bo
                 $('#save').attr('href', url);
                 $('#image').attr('src', url);
                 $('#image').removeClass('bg-danger');
+                editor.getSession().clearAnnotations();
             })
             .catch(e=>{
                 $('#image').addClass('bg-danger');
+                editor.getSession().setAnnotations([{
+                    row: 0,
+                    type: 'error',
+                    text: String(e)
+                }]);
             })
             .then(() => {
                 $('#image').css('opacity', '1.0');
