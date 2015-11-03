@@ -1,5 +1,5 @@
 'use strict';
-define(['jquery', 'lodash', 'ace', 'localforage', 'ace/mode-dot', 'ace/ext-language_tools', 'bootstrap'], function($, _, ace, localforage) {
+define(['jquery', 'lodash', 'ace', 'localforage', 'pako', 'ace/mode-dot', 'ace/ext-language_tools', 'bootstrap'], function($, _, ace, localforage, pako) {
     var worker = new Worker('js/worker.js');
     var editor = ace.edit('editor');
     editor.getSession().setMode('ace/mode/dot');
@@ -16,11 +16,25 @@ define(['jquery', 'lodash', 'ace', 'localforage', 'ace/mode-dot', 'ace/ext-langu
     localforage.config({
         storeName: 'my_dot_editor'
     });
-    localforage.getItem('text').then(text=>{
-        if (typeof text === 'string') {
-            editor.getSession().setValue(text);
-        }
+
+    $(window).on('popstate', e=> {
+        editor.getSession().setValue(e.originalEvent.state);
     });
+
+    if (window.location.hash !== '') {
+        var compressed = window.location.hash.substring(1);
+        var value = pako.inflateRaw(window.atob(compressed));
+        var decoder = new TextDecoder();
+        var v = decoder.decode(value);
+        history.replaceState(v, '');
+        editor.getSession().setValue(v);
+    } else {
+        localforage.getItem('text').then(text=>{
+            if (typeof text === 'string') {
+                editor.getSession().setValue(text);
+            }
+        });
+    }
 
     $('a[href=#]').on('click', event => event.preventDefault());
     $('#open').on('click', () => $('#file-open').on('click').trigger('click'));
@@ -52,6 +66,7 @@ define(['jquery', 'lodash', 'ace', 'localforage', 'ace/mode-dot', 'ace/ext-langu
                 $('#image').removeClass('bg-danger');
                 editor.getSession().clearAnnotations();
                 localforage.setItem('text', text);
+                storeState(text);
             })
             .catch(e=>{
                 $('#image').addClass('bg-danger');
@@ -66,6 +81,12 @@ define(['jquery', 'lodash', 'ace', 'localforage', 'ace/mode-dot', 'ace/ext-langu
             });
     });
 
+    function storeState(value) {
+        var encoder = new TextEncoder();
+        var encoded = encoder.encode(value);
+        var compressed = pako.deflateRaw(encoded, {to:'string'});
+        window.history.pushState(value, '', '#' + window.btoa(compressed));
+    }
 
     var sequence_generator = 0;
     function dot(source) {
