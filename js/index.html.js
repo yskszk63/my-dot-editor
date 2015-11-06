@@ -14,7 +14,9 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
     editor.focus();
 
     $(window).on('popstate', e=> {
-        editor.getSession().setValue(e.originalEvent.state);
+        var text = e.originalEvent.state;
+        editor.getSession().setValue(text);
+        execute(text);
     });
 
     $(() => {
@@ -28,6 +30,7 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
             history.replaceState(v, '');
         }
         editor.getSession().setValue(text);
+        execute(text);
     });
 
     $('a[href=#]').on('click', event => event.preventDefault());
@@ -41,16 +44,22 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
 
     $('#generate').on('click', () => {
         var text = editor.getValue();
+        if (text != window.history.state) {
+            execute(text).then(() => storeState(text));
+        }
+    });
+
+    function execute(text) {
         $('#image').css('opacity', '0.3');
-        Promise.resolve(text)
+        var result = Promise.resolve(text)
             .then(dot).then(to_svg_dataurl)
             .then(png).then(url => {
                 $('#image').attr('src', url);
                 $('#image').removeClass('bg-danger');
                 editor.getSession().clearAnnotations();
-                storeState(text);
             })
-            .catch(e=>{
+        result
+            .catch(e => {
                 $('#image').addClass('bg-danger');
                 editor.getSession().setAnnotations([{
                     row: 0,
@@ -58,10 +67,9 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
                     text: String(e)
                 }]);
             })
-            .then(() => {
-                $('#image').css('opacity', '1.0');
-            });
-    });
+            .then(() => $('#image').css('opacity', '1.0'));
+        return result;
+    }
 
     function storeState(value) {
         var encoder = new TextEncoder();
