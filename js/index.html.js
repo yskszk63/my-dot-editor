@@ -17,14 +17,18 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
         editor.getSession().setValue(e.originalEvent.state);
     });
 
-    if (window.location.hash !== '') {
-        var compressed = window.location.hash.substring(1);
-        var value = pako.inflateRaw(window.atob(compressed));
-        var decoder = new TextDecoder();
-        var v = decoder.decode(value);
-        history.replaceState(v, '');
-        editor.getSession().setValue(v);
-    }
+    $(() => {
+        var text = `digraph G {
+}`;
+        if (window.location.hash !== '') {
+            var compressed = window.location.hash.substring(1);
+            var value = pako.inflateRaw(window.atob(compressed));
+            var decoder = new TextDecoder();
+            var v = text = decoder.decode(value);
+            history.replaceState(v, '');
+        }
+        editor.getSession().setValue(text);
+    });
 
     $('a[href=#]').on('click', event => event.preventDefault());
 
