@@ -27,16 +27,6 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
     }
 
     $('a[href=#]').on('click', event => event.preventDefault());
-    $('#open').on('click', () => $('#file-open').on('click').trigger('click'));
-
-    $('#file-open').on('change', event => {
-        if (event.target.files.length) {
-            var file = event.target.files[0];
-            var reader = new FileReader();
-            $(reader).on('load', event => editor.getSession().setValue(event.target.result));
-            reader.readAsText(file);
-        }
-    });
 
     $('.app-engine').on('click', event => {
         $('#selected-engine').text($(event.target).data('app-engine'));
