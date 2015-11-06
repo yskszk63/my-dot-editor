@@ -1,5 +1,5 @@
 'use strict';
-define(['jquery', 'lodash', 'ace', 'localforage', 'pako', 'ace/mode-dot', 'ace/ext-language_tools', 'bootstrap'], function($, _, ace, localforage, pako) {
+define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools', 'bootstrap'], function($, _, ace, pako) {
     var worker = new Worker('js/worker.js');
     var editor = ace.edit('editor');
     editor.getSession().setMode('ace/mode/dot');
@@ -13,10 +13,6 @@ define(['jquery', 'lodash', 'ace', 'localforage', 'pako', 'ace/mode-dot', 'ace/e
     editor.$blockScrolling = Infinity;
     editor.focus();
 
-    localforage.config({
-        storeName: 'my_dot_editor'
-    });
-
     $(window).on('popstate', e=> {
         editor.getSession().setValue(e.originalEvent.state);
     });
@@ -28,12 +24,6 @@ define(['jquery', 'lodash', 'ace', 'localforage', 'pako', 'ace/mode-dot', 'ace/e
         var v = decoder.decode(value);
         history.replaceState(v, '');
         editor.getSession().setValue(v);
-    } else {
-        localforage.getItem('text').then(text=>{
-            if (typeof text === 'string') {
-                editor.getSession().setValue(text);
-            }
-        });
     }
 
     $('a[href=#]').on('click', event => event.preventDefault());
@@ -65,7 +55,6 @@ define(['jquery', 'lodash', 'ace', 'localforage', 'pako', 'ace/mode-dot', 'ace/e
                 $('#image').attr('src', url);
                 $('#image').removeClass('bg-danger');
                 editor.getSession().clearAnnotations();
-                localforage.setItem('text', text);
                 storeState(text);
             })
             .catch(e=>{
