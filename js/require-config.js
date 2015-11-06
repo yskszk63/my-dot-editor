@@ -19,6 +19,6 @@ var require = {
     'bootstrap': '//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min',
     'viz': '//rawgit.com/mdaines/viz.js/gh-pages/bower_components/viz.js/viz',
     'lodash': '//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min',
-    'pako': 'https://cdnjs.cloudflare.com/ajax/libs/pako/0.2.8/pako.min'
+    'pako': '//cdnjs.cloudflare.com/ajax/libs/pako/0.2.8/pako.min'
   }
 };
