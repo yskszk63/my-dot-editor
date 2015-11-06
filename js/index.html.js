@@ -50,7 +50,7 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
     });
 
     function execute(text) {
-        $('#image').css('opacity', '0.3');
+        $('body').addClass('processing');
         var result = Promise.resolve(text)
             .then(dot).then(to_svg_dataurl)
             .then(png).then(url => {
@@ -67,7 +67,7 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
                     text: String(e)
                 }]);
             })
-            .then(() => $('#image').css('opacity', '1.0'));
+            .then(() => $('body').removeClass('processing'));
         return result;
     }
 
