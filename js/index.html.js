@@ -41,7 +41,6 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
         Promise.resolve(text)
             .then(dot).then(to_svg_dataurl)
             .then(png).then(url => {
-                $('#save').attr('href', url);
                 $('#image').attr('src', url);
                 $('#image').removeClass('bg-danger');
                 editor.getSession().clearAnnotations();

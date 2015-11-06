@@ -12,8 +12,7 @@ main .input-pane {
     padding: 0px;
 }
 
-#editor,
-#save {
+#editor {
   height: 100%;
 }
 
