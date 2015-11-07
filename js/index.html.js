@@ -37,7 +37,8 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
 
     $('.app-engine').on('click', event => {
         $('#selected-engine').text($(event.target).data('app-engine'));
-        $('#generate').on('click').trigger('click');
+        var text = editor.getValue();
+        execute(text);
     });
 
     editor.getSession().on('change', _.debounce(() => $('#generate').on('click').trigger('click'), 300));
