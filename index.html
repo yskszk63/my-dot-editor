@@ -1,56 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="description" content="dot editor for myself." />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>my dot editor</title>
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="css/index.html.css">
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro"> 
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="//code.getmdl.io/1.1.3/material.cyan-light_blue.min.css" />
+    <link rel="stylesheet" href="css/index.html.css" />
   </head>
   <body>
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <div class="navbar-header">
-          <a class="navbar-brand" href="#">my-dot-editor</a>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
+        <img class="mdl-layout-icon"></img>
+        <div class="mdl-layout__header-row">
+          <span class="mdl-layout-title">my dot editor</span>
+          <div class="mdl-spinner mdl-js-spinner is-active"></div>
         </div>
-        <ul id="navbar-collapse" class="nav navbar-nav collapse navbar-collapse navbar-left">
-          <li><a id="generate" href="#" ><span class="glyphicon glyphicon-play"></span> generate</a></li>
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-              <span id="selected-engine">dot</span><span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a href="#" class="app-engine" data-app-engine="dot">dot</a></li>
-              <li><a href="#" class="app-engine" data-app-engine="neato">neato</a></li>
-              <li><a href="#" class="app-engine" data-app-engine="circo">circo</a></li>
-              <li><a href="#" class="app-engine" data-app-engine="twopi">twopi</a></li>
-              <li><a href="#" class="app-engine" data-app-engine="fdp">fdp</a></li>
-              <li><a href="#" class="app-engine" data-app-engine="osage">osage</a></li>
-            </ul>
-          </li>
-        </ul>
+      </header>
+      <div class="mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
+        <span class="mdl-layout-title">my dot editor</span>
+        <nav id="engine-selection" class="mdl-navigation mdl-color--blue-grey-800">
+          engine
+          <a class="mdl-navigation__link" href="#" data-checked="true">dot</a>
+          <a class="mdl-navigation__link" href="#">neato</a>
+          <a class="mdl-navigation__link" href="#">circo</a>
+          <a class="mdl-navigation__link" href="#">twopi</a>
+          <a class="mdl-navigation__link" href="#">fdp</a>
+          <a class="mdl-navigation__link" href="#">osage</a>
+        </nav>
       </div>
-    </nav>
-
-    <main class="container-fluid">
-      <div class="row">
-        <div class="col-md-6 input-pane">
-          <div id="editor"></div>
+      <main class="mdl-layout__content mdl-color--grey-100">
+        <div class="mdl-grid">
+          <div class="mdl-card mdl-color--white mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-grid">
+            <div class="mdl-card__supporting-text">
+              <div id="editor"></div>
+            </div>
+            <div class="mdl-card__menu">
+              <button id="generate" class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--primary">
+                <i class="material-icons">play_arrow</i>
+              </button>
+              <div class="mdl-tooltip" for="generate">generate</div>
+            </div>
+          </div>
+          <div class="mdl-card mdl-color--white mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-grid">
+            <div class="mdl-card__supporting-text">
+              <img id="image" />
+            </div>
+          </div>
         </div>
-        <div class="col-md-6 output-pane">
-          <img id="image" class="img-responsive img-thumbnail center-block" />
-        </div>
-      </div>
-    </main>
+      </main>
+    </div>
 
+    <script src="//code.getmdl.io/1.1.3/material.min.js"></script>
     <script src="js/require-config.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.20/require.min.js" data-main="js/index.html"></script>
   </body>

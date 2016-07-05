@@ -1,92 +1,85 @@
 'use strict';
-define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools', 'bootstrap'], function($, _, ace, pako) {
-    var worker = new Worker('js/worker.js');
-    var editor = ace.edit('editor');
+define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, pako) {
+    const worker = new Worker('js/worker.js');
+    const editor = ace.edit('editor');
     editor.getSession().setMode('ace/mode/dot');
     editor.getSession().setUseSoftTabs(true);
-    editor.setOptions({
-        enableBasicAutocompletion: true,
-        enableSnippets: true,
-        enableLiveAutocompletion: false,
-        fontSize: $('body').css('font-size')
-    });
     editor.$blockScrolling = Infinity;
     editor.focus();
 
-    $(window).on('popstate', e=> {
-        var text = e.originalEvent.state;
-        editor.getSession().setValue(text);
-        execute(text);
+    Array.from(document.querySelectorAll('#engine-selection a')).forEach(element => {
+        element.addEventListener('click', event => {
+            event.preventDefault();
+            delete event.target.parentNode.querySelector('[data-checked="true"]').dataset.checked;
+            event.target.dataset.checked = "true";
+            update().then(text => storeState(text));
+        }, false);
     });
 
-    $(() => {
-        var text = `digraph G {
-}`;
+    (() => {
         if (window.location.hash !== '') {
-            var compressed = window.location.hash.substring(1);
-            var value = pako.inflateRaw(window.atob(compressed));
-            var decoder = new TextDecoder();
-            var v = text = decoder.decode(value);
-            history.replaceState(v, '');
+            const compressed = window.location.hash.substring(1);
+            const value = pako.inflateRaw(window.atob(compressed));
+            editor.getSession().setValue(new TextDecoder().decode(value));
+        } else {
+            editor.getSession().setValue("digraph G {\n}");
         }
-        editor.getSession().setValue(text);
-        execute(text);
-    });
+        Promise.resolve().then(update);
+    })();
 
-    $('a[href=#]').on('click', event => event.preventDefault());
+    window.addEventListener('popstate', event => {
+        editor.getSession().setValue(event.state);
+        update();
+    }, false);
 
-    $('.app-engine').on('click', event => {
-        $('#selected-engine').text($(event.target).data('app-engine'));
-        var text = editor.getValue();
-        execute(text);
-    });
+    editor.getSession().on('change', debounce(() =>
+        document.querySelector('#generate').dispatchEvent(new Event('click')), 1000));
 
-    editor.getSession().on('change', _.debounce(() => $('#generate').on('click').trigger('click'), 300));
+    document.querySelector('#generate').addEventListener('click', event =>
+        update().then(text => storeState(text)), false);
 
-    $('#generate').on('click', () => {
-        var text = editor.getValue();
-        if (text != window.history.state) {
-            execute(text).then(() => storeState(text));
-        }
-    });
+    function update() {
+        const text = editor.getValue();
+        const engine = document.querySelector('#engine-selection a[data-checked="true"]').textContent;
 
-    function execute(text) {
-        $('body').addClass('processing');
-        var result = Promise.resolve(text)
-            .then(dot).then(to_svg_dataurl)
-            .then(png).then(url => {
-                $('#image').attr('src', url);
-                $('#image').removeClass('bg-danger');
+        document.querySelector('body').classList.add('processing');
+        const result = dot(text, engine)
+            .then(to_svg_dataurl).then(png)
+            .then(url => {
+                const image = document.querySelector('#image');
+                image.src = url;
+                image.classList.remove('mdl-badge');
                 editor.getSession().clearAnnotations();
-            })
+                return text;
+            });
         result
             .catch(e => {
-                $('#image').addClass('bg-danger');
+                const image = document.querySelector('#image');
+                image.classList.add('mdl-badge');
                 editor.getSession().setAnnotations([{
                     row: 0,
                     type: 'error',
                     text: String(e)
                 }]);
             })
-            .then(() => $('body').removeClass('processing'));
+            .then(() => document.querySelector('body').classList.remove('processing'));
         return result;
     }
 
     function storeState(value) {
-        var encoder = new TextEncoder();
-        var encoded = encoder.encode(value);
-        var compressed = pako.deflateRaw(encoded, {to:'string'});
+        const encoded = new TextEncoder().encode(value);
+        const compressed = pako.deflateRaw(encoded, {to:'string'});
         window.history.pushState(value, '', '#' + window.btoa(compressed));
     }
 
     var sequence_generator = 0;
-    function dot(source) {
-        var sequence = sequence_generator++;
+    function dot(source, engine) {
+        const sequence = sequence_generator++;
         return new Promise((resolve, reject) => {
             function handler(event) {
-                var message = event.originalEvent.data;
+                var message = event.data;
                 if (message.sequence === sequence) {
-                    $(worker).off('message', handler);
+                    worker.removeEventListener('message', handler, false);
                     if (message.status === 'ok') {
                         resolve(message.data);
                     } else {
@@ -94,28 +87,28 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
                     }
                 }
             }
-            $(worker).on('message', handler);
-            worker.postMessage({data:source, sequence:sequence, engine:$('#selected-engine').text()});
+            worker.addEventListener('message', handler, false);
+            worker.postMessage({data:source, sequence, engine});
         });
     }
 
     function to_svg_dataurl(svg) {
         return new Promise((resolve, reject) => {
-            var blob = new Blob([svg], {type:'image/svg+xml'});
-            var reader = new FileReader();
-            $(reader).on('load', event => resolve(event.target.result));
-            $(reader).on('error', reject);
+            const blob = new Blob([svg], {type:'image/svg+xml'});
+            const reader = new FileReader();
+            reader.addEventListener('load', event => resolve(event.target.result), false);
+            reader.addEventListener('error', reject, false);
             reader.readAsDataURL(blob);
         });
     }
 
     function png(svg) {
         return new Promise((resolve, reject) => {
-            var image = new Image();
-            $(image).on('load', event => {
+            const image = new Image();
+            image.addEventListener('load', event => {
                 try {
-                    var canvas = $('<canvas>')[0];
-                    var ctx = canvas.getContext("2d");
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext("2d");
                     canvas.width = image.width;
                     canvas.height = image.height;
                     ctx.drawImage(image, 0, 0);
@@ -123,9 +116,17 @@ define(['jquery', 'lodash', 'ace', 'pako', 'ace/mode-dot', 'ace/ext-language_too
                 } catch (e) {
                     reject(e);
                 }
-            });
+            }, false);
             image.src = svg;
         });
+    }
+
+    function debounce(fun, interval) {
+        var timer;
+        return () => {
+            clearTimeout(timer);
+            timer = setTimeout(fun, interval);
+        };
     }
 
 });
