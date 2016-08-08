@@ -12,7 +12,7 @@ var require = {
     }
   },
   paths: {
-    'viz': '//rawgit.com/mdaines/viz.js/gh-pages/bower_components/viz.js/viz',
+    'viz': 'https://rawgit.com/yskszk63/viz.js/master/dist/viz',
     'pako': '//cdnjs.cloudflare.com/ajax/libs/pako/0.2.8/pako.min'
   }
 };

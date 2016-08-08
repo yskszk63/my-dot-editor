@@ -1,75 +1,191 @@
 'use strict';
 define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, pako) {
     const worker = new Worker('js/worker.js');
-    const editor = ace.edit('editor');
-    editor.getSession().setMode('ace/mode/dot');
-    editor.getSession().setUseSoftTabs(true);
-    editor.$blockScrolling = Infinity;
+
+    class EventEmitter {
+        constructor() {
+            Object.defineProperty(this, '_listeners', {
+                value: new Map()
+            });
+        }
+        dispatch(type) {
+            if (this._listeners.has(type)) {
+                this._listeners.get(type)
+                    .forEach(listener => listener(this));
+            }
+        }
+        on(type, listener) {
+            if (!this._listeners.has(type)) {
+                this._listeners.set(type, new Set());
+            }
+            this._listeners.get(type).add(listener);
+        }
+        off(type, listener) {
+            if (this._listeners.has(type)) {
+                const listeners = this._listeners.get(type);
+                listeners.delete(listener);
+                if (!listeners.size) {
+                    this._listeners.delete(type);
+                }
+            }
+        }
+    }
+
+    const model = new (class Model extends EventEmitter {
+        constructor(source="", engine="dot") {
+            super();
+            this._source = source;
+            this._engine = engine;
+        }
+        get source() {
+            return this._source;
+        }
+        set source(val) {
+            this._source = val;
+            this.dispatch('change');
+        }
+        get engine() {
+            return this._engine;
+        }
+        set engine(val) {
+            this._engine = val;
+            this.dispatch('change');
+        }
+        get state() {
+            return this._state;
+        }
+        set state(val) {
+            this._state = val;
+            this.dispatch('state_changed');
+        }
+        get result() {
+            return this._result;
+        }
+        set result(val) {
+            this._result = val;
+            delete this._error;
+            this.state = 'success';
+        }
+        get error() {
+            return this._error;
+        }
+        set error(val) {
+            delete this._result;
+            this._error = val;
+            this.state = 'error';
+        }
+    })()
+
+    model.on('change', self => update(self).then(storeState));
+
+    const editor = ((element) => {
+        const editor = ace.edit(element);
+        editor.getSession().setMode('ace/mode/dot');
+        editor.getSession().setUseSoftTabs(true);
+        editor.$blockScrolling = Infinity;
+        return editor;
+    })(document.querySelector('#editor'));
     editor.focus();
 
-    Array.from(document.querySelectorAll('#engine-selection a')).forEach(element => {
-        element.addEventListener('click', event => {
+    editor.getSession().on('change',
+            debounce(() => model.source = editor.getValue(), 1000));
+
+    document.querySelector('html').addEventListener('click', event => {
+        if (event.target.matches('a[href]')) {
             event.preventDefault();
-            delete event.target.parentNode.querySelector('[data-checked="true"]').dataset.checked;
-            event.target.dataset.checked = "true";
-            update().then(text => storeState(text));
-        }, false);
-    });
-
-    (() => {
-        if (window.location.hash !== '') {
-            const compressed = window.location.hash.substring(1);
-            const value = pako.inflateRaw(window.atob(compressed));
-            editor.getSession().setValue(new TextDecoder().decode(value));
-        } else {
-            editor.getSession().setValue("digraph G {\n}");
         }
-        Promise.resolve().then(update);
-    })();
-
-    window.addEventListener('popstate', event => {
-        editor.getSession().setValue(event.state);
-        update();
     }, false);
 
-    editor.getSession().on('change', debounce(() =>
-        document.querySelector('#generate').dispatchEvent(new Event('click')), 1000));
+    document.querySelector('#engine-selection').addEventListener('click', event => {
+        const self = event.currentTarget;
+        const target = event.target.closest('a:not([data-checked])');
 
-    document.querySelector('#generate').addEventListener('click', event =>
-        update().then(text => storeState(text)), false);
+        if (!!target && self.contains(target)) {
+            delete self.querySelector('a[data-checked]').dataset.checked;
+            target.dataset.checked = "true";
+            model.engine = target.textContent;
+        }
 
-    function update() {
-        const text = editor.getValue();
-        const engine = document.querySelector('#engine-selection a[data-checked="true"]').textContent;
+        if (!!self.closest('.mdl-layout__drawer.is-visible')) {
+            self.closest('.mdl-layout').MaterialLayout.toggleDrawer();
+        }
+    }, false);
 
-        document.querySelector('body').classList.add('processing');
-        const result = dot(text, engine)
+    window.addEventListener('hashchange', event => {console.log("OK")}, false);
+    (() => {
+        const value = (() => {
+            if (window.location.hash !== '') {
+                try {
+                    const compressed = window.location.hash.substring(1);
+                    return new TextDecoder().decode(pako.inflateRaw(window.atob(compressed)));
+                } catch (e) {
+                }
+            }
+            return "digraph G {\n}";
+        })();
+        editor.setValue(value);
+    })();
+
+    window.addEventListener('popstate',
+        event => editor.setValue(event.state), false);
+
+    document.querySelector('#generate').addEventListener('click',
+        () => model.source = editor.getValue(), false);
+
+    model.on('state_changed', self => {
+        switch(self.state) {
+        case 'success':
+        case 'error':
+            document.querySelector('body').classList.remove('processing');
+            break;
+        default:
+            document.querySelector('body').classList.add('processing');
+            break;
+        }
+    });
+    model.on('state_changed', self => {
+        const image = document.querySelector('#image');
+
+        switch(self.state) {
+        case 'success':
+            image.src = self.result;
+            image.classList.remove('mdl-badge');
+            editor.getSession().clearAnnotations();
+            break;
+
+        case 'error':
+            image.classList.add('mdl-badge');
+            editor.getSession().setAnnotations([{
+                row: 0,
+                type: 'error',
+                text: String(self.error)
+            }]);
+            break;
+        }
+    });
+
+    function update(model) {
+        const text = model.source;
+        const engine = model.engine;
+
+        model.state = 'processing';
+        return dot(text, engine)
             .then(to_svg_dataurl).then(png)
             .then(url => {
-                const image = document.querySelector('#image');
-                image.src = url;
-                image.classList.remove('mdl-badge');
-                editor.getSession().clearAnnotations();
+                model.result = url;
                 return text;
+            }, e => {
+                model.error = e;
+                throw e;
             });
-        result
-            .catch(e => {
-                const image = document.querySelector('#image');
-                image.classList.add('mdl-badge');
-                editor.getSession().setAnnotations([{
-                    row: 0,
-                    type: 'error',
-                    text: String(e)
-                }]);
-            })
-            .then(() => document.querySelector('body').classList.remove('processing'));
-        return result;
     }
 
     function storeState(value) {
-        const encoded = new TextEncoder().encode(value);
-        const compressed = pako.deflateRaw(encoded, {to:'string'});
-        window.history.pushState(value, '', '#' + window.btoa(compressed));
+        if (history.state != value) {
+            const encoded = new TextEncoder().encode(value);
+            const compressed = pako.deflateRaw(encoded, {to:'string'});
+            window.history.pushState(value, '', '#' + window.btoa(compressed));
+        }
     }
 
     var sequence_generator = 0;
