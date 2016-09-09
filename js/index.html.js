@@ -2,30 +2,32 @@
 define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, pako) {
     const worker = new Worker('js/worker.js');
 
+    const p = Symbol();
     class EventEmitter {
         constructor() {
-            Object.defineProperty(this, '_listeners', {
-                value: new Map()
+            Object.defineProperty(this, p, {
+                value: {
+                    listeners: new Map()
+                }
             });
         }
         dispatch(type) {
-            if (this._listeners.has(type)) {
-                this._listeners.get(type)
-                    .forEach(listener => listener(this));
+            const l = this[p].listeners;
+            if (l.has(type)) {
+                l.get(type).forEach(listener => listener(this));
             }
         }
         on(type, listener) {
-            if (!this._listeners.has(type)) {
-                this._listeners.set(type, new Set());
-            }
-            this._listeners.get(type).add(listener);
+            const l = this[p].listeners;
+            (l.get(type) || l.set(type, new Set()).get(type)).add(listener);
         }
         off(type, listener) {
-            if (this._listeners.has(type)) {
-                const listeners = this._listeners.get(type);
+            const l = this[p].listeners;
+            if (l.has(type)) {
+                const listeners = l.get(type);
                 listeners.delete(listener);
                 if (!listeners.size) {
-                    this._listeners.delete(type);
+                    l.delete(type);
                 }
             }
         }
@@ -34,44 +36,43 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
     const model = new (class Model extends EventEmitter {
         constructor(source="", engine="dot") {
             super();
-            this._source = source;
-            this._engine = engine;
+            Object.assign(this[p], {source, engine});
         }
         get source() {
-            return this._source;
+            return this[p].source;
         }
         set source(val) {
-            this._source = val;
+            this[p].source = val;
             this.dispatch('change');
         }
         get engine() {
-            return this._engine;
+            return this[p].engine;
         }
         set engine(val) {
-            this._engine = val;
+            this[p].engine = val;
             this.dispatch('change');
         }
         get state() {
-            return this._state;
+            return this[p].state;
         }
         set state(val) {
-            this._state = val;
+            this[p].state = val;
             this.dispatch('state_changed');
         }
         get result() {
-            return this._result;
+            return this[p].result;
         }
         set result(val) {
-            this._result = val;
-            delete this._error;
+            this[p].result = val;
+            delete this[p].error;
             this.state = 'success';
         }
         get error() {
-            return this._error;
+            return this[p].error;
         }
         set error(val) {
-            delete this._result;
-            this._error = val;
+            delete this[p].result;
+            this[p].error = val;
             this.state = 'error';
         }
     })()
@@ -90,8 +91,8 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
     editor.getSession().on('change',
             debounce(() => model.source = editor.getValue(), 1000));
 
-    document.querySelector('html').addEventListener('click', event => {
-        if (event.target.matches('a[href]')) {
+    window.addEventListener('click', event => {
+        if (event.target.closest('nav a[href]')) {
             event.preventDefault();
         }
     }, false);
@@ -111,7 +112,6 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
         }
     }, false);
 
-    window.addEventListener('hashchange', event => {console.log("OK")}, false);
     (() => {
         const value = (() => {
             if (window.location.hash !== '') {
@@ -144,22 +144,37 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
         }
     });
     model.on('state_changed', self => {
-        const image = document.querySelector('#image');
-
         switch(self.state) {
         case 'success':
-            image.src = self.result;
-            image.classList.remove('mdl-badge');
             editor.getSession().clearAnnotations();
             break;
-
         case 'error':
-            image.classList.add('mdl-badge');
             editor.getSession().setAnnotations([{
                 row: 0,
                 type: 'error',
                 text: String(self.error)
             }]);
+            break;
+        }
+    });
+    model.on('state_changed', self => {
+        const target = document.querySelector('output a');
+
+        switch(self.state) {
+        case 'success':
+            const url = URL.createObjectURL(self.result);
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = 'document';
+            xhr.addEventListener('load', event => {
+                URL.revokeObjectURL(target.href);
+                target.href = url;
+                Array.from(target.children, e => e.remove());
+                const clone = document.importNode(
+                    event.target.response.documentElement, true);
+                target.appendChild(clone);
+            }, false);
+            xhr.send();
             break;
         }
     });
@@ -170,9 +185,8 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
 
         model.state = 'processing';
         return dot(text, engine)
-            .then(to_svg_dataurl).then(png)
-            .then(url => {
-                model.result = url;
+            .then(blob => {
+                model.result = blob;
                 return text;
             }, e => {
                 model.error = e;
@@ -197,7 +211,7 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
                 if (message.sequence === sequence) {
                     worker.removeEventListener('message', handler, false);
                     if (message.status === 'ok') {
-                        resolve(message.data);
+                        resolve(new Blob([message.data], {type:'image/svg+xml'}));
                     } else {
                         reject(message.data);
                     }
@@ -208,16 +222,7 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
         });
     }
 
-    function to_svg_dataurl(svg) {
-        return new Promise((resolve, reject) => {
-            const blob = new Blob([svg], {type:'image/svg+xml'});
-            const reader = new FileReader();
-            reader.addEventListener('load', event => resolve(event.target.result), false);
-            reader.addEventListener('error', reject, false);
-            reader.readAsDataURL(blob);
-        });
-    }
-
+/*
     function png(svg) {
         return new Promise((resolve, reject) => {
             const image = new Image();
@@ -236,7 +241,7 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
             image.src = svg;
         });
     }
-
+*/
     function debounce(fun, interval) {
         var timer;
         return () => {
