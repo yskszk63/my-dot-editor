@@ -6,6 +6,13 @@ main > div.mdl-grid {
 	box-sizing: border-box;
 	height: 100%;
 }
+main > div.mdl-grid > div.mdl-cell {
+    padding: 0;
+}
+
+.mdl-layout__drawer {
+    border: 0;
+}
 
 #editor {
 	width: 100%;
@@ -26,10 +33,10 @@ body.processing .mdl-spinner {
 	display: inherit;
 }
 
-body.processing #image {
+body.processing output a {
 	opacity: 0.3;
 }
 
-.mdl-card__supporting-text {
-	overflow: auto;
+output {
+    overflow: auto;
 }

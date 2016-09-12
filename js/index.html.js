@@ -80,6 +80,9 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
     model.on('change', self => update(self).then(storeState));
 
     const editor = ((element) => {
+        // XXX fix me.
+        setTimeout(()=>window.dispatchEvent(new Event('resize')), 1000);
+
         const editor = ace.edit(element);
         editor.getSession().setMode('ace/mode/dot');
         editor.getSession().setUseSoftTabs(true);
@@ -131,6 +134,8 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
 
     document.querySelector('#generate').addEventListener('click',
         () => model.source = editor.getValue(), false);
+    document.querySelector('#fit').addEventListener('change',
+        () => model.source = editor.getValue(), false);
 
     model.on('state_changed', self => {
         switch(self.state) {
@@ -172,6 +177,10 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
                 Array.from(target.children, e => e.remove());
                 const clone = document.importNode(
                     event.target.response.documentElement, true);
+                if (document.querySelector('#fit:checked')) {
+                    clone.setAttribute('width', '100%');
+                    clone.setAttribute('height', '100%');
+                }
                 target.appendChild(clone);
             }, false);
             xhr.send();
