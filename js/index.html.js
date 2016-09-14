@@ -227,7 +227,7 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
                 }
             }
             worker.addEventListener('message', handler, false);
-            worker.postMessage({data:source, sequence, engine});
+            worker.postMessage({data:new TextEncoder().encode(source), sequence, engine});
         });
     }
 

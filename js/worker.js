@@ -8,12 +8,9 @@ const lazyviz = new Promise((resolve, reject) => {
 self.addEventListener('message', event => {
     const data = event.data;
     lazyviz
-        .then(viz => viz(data.data, {format:'svg', engine:data.engine}))
+        .then(viz => viz(data.data, {format:'svg', engine:data.engine, useta:true}))
         .then(
-            result => self.postMessage({status:'ok', sequence: data.sequence, data: transferable(result)}),
+            result => self.postMessage({status:'ok', sequence: data.sequence, data: result}),
             e => self.postMessage({status:'ng', sequence: data.sequence, data: String(e)}))
 }, false);
 
-function transferable(text) {
-    return new TextEncoder().encode(text).buffer;
-}
