@@ -10,7 +10,7 @@ self.addEventListener('message', event => {
     lazyviz
         .then(viz => viz(data.data, {format:'svg', engine:data.engine, useta:true}))
         .then(
-            result => self.postMessage({status:'ok', sequence: data.sequence, data: result}),
+            result => self.postMessage({status:'ok', sequence: data.sequence, data: result}, [result.buffer]),
             e => self.postMessage({status:'ng', sequence: data.sequence, data: String(e)}))
 }, false);
 
