@@ -1,5 +1,5 @@
 'use strict';
-define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, pako) {
+define(['codemirror', 'pako', 'codemirror/mode/javascript/javascript.min'], function(codemirror, pako) {
     const worker = new Worker('js/worker.js');
 
     const p = Symbol();
@@ -83,15 +83,12 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
         // XXX fix me.
         setTimeout(()=>window.dispatchEvent(new Event('resize')), 1000);
 
-        const editor = ace.edit(element);
-        editor.getSession().setMode('ace/mode/dot');
-        editor.getSession().setUseSoftTabs(true);
-        editor.$blockScrolling = Infinity;
+        const editor = codemirror.fromTextArea(element, {mode: 'javascript', lineNumbers: true});
         return editor;
     })(document.querySelector('#editor'));
     editor.focus();
 
-    editor.getSession().on('change',
+    editor.on('change',
             debounce(() => model.source = editor.getValue(), 1000));
 
     window.addEventListener('click', event => {
@@ -151,14 +148,17 @@ define(['ace', 'pako', 'ace/mode-dot', 'ace/ext-language_tools'], function(ace, 
     model.on('state_changed', self => {
         switch(self.state) {
         case 'success':
-            editor.getSession().clearAnnotations();
+            //editor.getSession().clearAnnotations();
             break;
         case 'error':
-            editor.getSession().setAnnotations([{
-                row: 0,
-                type: 'error',
-                text: String(self.error)
-            }]);
+            document.querySelector('#error-output').MaterialSnackbar.showSnackbar({
+                message: String(self.error)
+            })
+            //editor.getSession().setAnnotations([{
+            //    row: 0,
+            //    type: 'error',
+            //    text: String(self.error)
+            //}]);
             break;
         }
     });

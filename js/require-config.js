@@ -1,11 +1,16 @@
 var require = {
   packages: [
     {
-      name: 'ace',
-      location: '//cdnjs.cloudflare.com/ajax/libs/ace/1.2.3',
-      main: 'ace'
+      name: 'codemirror',
+      location: 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/',
+      main: 'codemirror.min'
     }
   ],
+  map: {
+    'codemirror': {
+      'codemirror/lib/codemirror': 'codemirror'
+    }
+  },
   shim: {
     'viz': {
       exports: 'Viz'
